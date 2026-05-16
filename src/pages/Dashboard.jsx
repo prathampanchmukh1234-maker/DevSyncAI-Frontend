@@ -14,12 +14,28 @@ function Dashboard() {
   const fetchMetrics = async () => {
     try {
       const response = await authenticatedFetch(
-        `${import.meta.env.VITE_API_URL}/api/sessions/metrics`
+        `${import.meta.env.VITE_API_URL}/api/sessions/metrics/summary`
       )
       
       if (response.ok) {
-        const data = await response.json()
-        setMetrics(data)
+        const result = await response.json()
+        // Extract metrics from the nested response structure
+        if (result.success && result.data && result.data.metrics) {
+          setMetrics({
+            total_sessions: result.data.metrics.totalSessions || 0,
+            total_lines: result.data.metrics.totalLines || 0,
+            total_tests: result.data.metrics.totalTests || 0,
+            total_tasks: result.data.metrics.totalTasks || 0
+          })
+        } else {
+          // If no metrics exist yet, show zeros
+          setMetrics({
+            total_sessions: 0,
+            total_lines: 0,
+            total_tests: 0,
+            total_tasks: 0
+          })
+        }
       } else {
         // If no metrics exist yet, show zeros
         setMetrics({
